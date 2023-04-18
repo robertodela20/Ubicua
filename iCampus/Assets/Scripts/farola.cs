@@ -4,20 +4,31 @@ using UnityEngine;
 using UnityEngine.UI;
 using System.IO;
 using System.Linq;
+using System;
 
 public class farola : MonoBehaviour
 {
     public Text Textfield;
 
-    public void SetText(int id){
-        //Textfield.text=text;
-        Textfield.text="Farola apagada";
-        /*string path = @"C:\Users\34628\Documents\Ubicua\iCampus\Assets\Scripts\texto_botons.txt";
-        FileStream arquivo= File.Open(path,  FileMode.Open, FileAccess.Read);
+    public void SetText(string arg){
+		string path = Directory.GetCurrentDirectory()+"/Assets/Scripts/texto_botons.txt";
         IEnumerable<string> linhas= File.ReadLines(path);
         List<string> lista_linhas= linhas.ToList();
-        Textfield.text= lista_linhas[id];
-        */
+		char delimitador ='|';
+		char delimitador2 =',';
+		string[] id= arg.Split(delimitador2);
+		int id1 = Int32.Parse(id[0]);
+		int id2 = Int32.Parse(id[1]);
+		string[] aux = lista_linhas[id1].Split(delimitador);
+		if(id2==0){
+			Textfield.text= aux[0];
+		}
+		else{
+			Textfield.text= aux[1];
+		}
+		
+        //Textfield.text= lista_linhas[id1];
+        
 
     }
 }
