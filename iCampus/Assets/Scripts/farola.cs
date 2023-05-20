@@ -1,24 +1,73 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Networking;
 using UnityEngine.UI;
-using System.IO;
-using System.Linq;
+using System.Collections;
+
 
 public class farola : MonoBehaviour
 {
-    public Text Textfield;
-
-    public void SetText(int id){
-        //Textfield.text=text;
-        Textfield.text="Farola apagada";
-        /*string path = @"C:\Users\34628\Documents\Ubicua\iCampus\Assets\Scripts\texto_botons.txt";
-        FileStream arquivo= File.Open(path,  FileMode.Open, FileAccess.Read);
-        IEnumerable<string> linhas= File.ReadLines(path);
-        List<string> lista_linhas= linhas.ToList();
-        Textfield.text= lista_linhas[id];
-        */
-
+    private string weatherAPIUrl = "http://api.openweathermap.org/data/2.5/weather?q=Santiago+de+Compostela,es&appid=fc320eafda5a3d2ae06b2caf62595bf4";
+    public Text textField;
+    
+    private void Start()
+    {
+        StartCoroutine(UpdateWeatherData());
     }
+    
+    IEnumerator UpdateWeatherData()
+    {
+        // Ejecutar una vez inmediatamente
+        yield return StartCoroutine(FetchWeatherData());
+        
+        // Ejecutar repetidamente cada 10 segundos
+        InvokeRepeating(nameof(UpdateDataRoutine), 10f, 10f);
+    }
+    
+    IEnumerator FetchWeatherData()
+    {
+        using (UnityWebRequest webRequest = UnityWebRequest.Get(weatherAPIUrl))
+        {
+            yield return webRequest.SendWebRequest();
+            
+            if (webRequest.result == UnityWebRequest.Result.ConnectionError || webRequest.result == UnityWebRequest.Result.ProtocolError)
+            {
+                Debug.LogError("Error: " + webRequest.error);
+            }
+            else
+            {
+                string response = webRequest.downloadHandler.text;
+                WeatherData weatherData = JsonUtility.FromJson<WeatherData>(response);
+                float temperature = weatherData.main.temp;
+				int humidity = weatherData.main.humidity;
+				float windSpeed = weatherData.wind.speed;
+                textField.text = temperature.ToString() + "\n" + humidity.ToString() + "\n" + windSpeed.ToString();
+            }
+        }
+    }
+    
+    private void UpdateDataRoutine()
+    {
+        StartCoroutine(FetchWeatherData());
+    }
+}
+
+[System.Serializable]
+public class WeatherData
+{
+    public WeatherMainData main;
+    public WindData wind;
+}
+
+[System.Serializable]
+public class WeatherMainData
+{
+    public float temp;
+    public int humidity;
+}
+
+[System.Serializable]
+public class WindData
+{
+    public float speed;
 }
 
