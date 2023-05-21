@@ -6,9 +6,13 @@ using UnityEngine.AI;
 
 public class BusMove : MonoBehaviour
 {
-    [SerializeField] 
-    Transform _destination;
+    /*[SerializeField] 
+    Transform _FinalDestination;*/
+    [SerializeField]
+    int BusId;
 
+    public Transform[] points;
+    private int destPoint = 0;
     NavMeshAgent _navMeshAgent;
 
     // Start is called before the first frame update
@@ -21,17 +25,49 @@ public class BusMove : MonoBehaviour
             Debug.LogError("El componente navMeshAgent no está enlazado con " + gameObject.name);
         }
         else{
-            SetDestination();
+            agent.autoBraking = false;
+            GotoNextPoint();
         }
     }
 
-    // Set destination target
+
+    // Select the next point in the rute
+    private void GotoNextPoint() {
+            // Returns if no points have been set up
+            if (points.Length == 0)
+                return;
+
+            // Set the agent to go to the currently selected destination.
+            agent.destination = points[destPoint].position;
+
+            // Choose the next point in the array as the destination,
+            // cycling to the start if necessary.
+            destPoint = (destPoint + 1) % points.Length;
+        }
+
+    /* Set the final destination target
     private void SetDestination()
     {
-        if(_destination != null)
+        if(_FinalDestination != null)
         {
-            Vector3 targetVector = _destination.transform.position;
+            Vector3 targetVector = _FinalDestination.transform.position;
             _navMeshAgent.SetDestination(targetVector);
         }
+    }*/
+
+    private void setPointsBus()
+    {
+        if(this.BusId == 0){
+            
+        }
+    }
+
+
+
+    // Choose the next destination point when the agent gets
+    // close to the current one.
+    void Update () {
+        if (agent.remainingDistance < 0.5f)
+            GotoNextPoint();
     }
 }
