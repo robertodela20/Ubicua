@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -6,14 +7,23 @@ using UnityEngine.AI;
 
 public class BusMove : MonoBehaviour
 {
+    //Public variables
     /*[SerializeField] 
     Transform _FinalDestination;*/
-    [SerializeField]
-    int BusId;
+    public int BusId;
 
-    public Transform[] points;
-    private int destPoint = 0;
+    [SerializeField]
+    Transform[] points;
+
+    //[SerializeField]
+    //float totalWaitTime = 3f;
+    
+    //private variables
     NavMeshAgent _navMeshAgent;
+    int destPoint;
+    bool _travelling;
+    //bool _waiting;
+    //float _waitTimer;
 
     // Start is called before the first frame update
     void Start()
@@ -25,25 +35,26 @@ public class BusMove : MonoBehaviour
             Debug.LogError("El componente navMeshAgent no está enlazado con " + gameObject.name);
         }
         else{
-            agent.autoBraking = false;
-            GotoNextPoint();
+            if (points.Length > 0){
+                _navMeshAgent.autoBraking = false;
+                _navMeshAgent.updateRotation = false;
+		        _navMeshAgent.updateUpAxis = false;
+                GotoNextPoint();
+            }
         }
     }
 
 
     // Select the next point in the rute
     private void GotoNextPoint() {
-            // Returns if no points have been set up
-            if (points.Length == 0)
-                return;
-
-            // Set the agent to go to the currently selected destination.
-            agent.destination = points[destPoint].position;
-
-            // Choose the next point in the array as the destination,
-            // cycling to the start if necessary.
-            destPoint = (destPoint + 1) % points.Length;
-        }
+        // Set the agent to go to the currently selected destination.
+        Vector3 targetDestination = points[destPoint].transform.position;
+        _navMeshAgent.SetDestination(targetDestination);
+        // Choose the next point in the array as the destination,
+        // cycling to the start if necessary.
+        destPoint = (destPoint + 1) % points.Length;
+        _travelling = true;
+    }
 
     /* Set the final destination target
     private void SetDestination()
@@ -55,19 +66,25 @@ public class BusMove : MonoBehaviour
         }
     }*/
 
-    private void setPointsBus()
+    /*private void setPointsBus()
     {
         if(this.BusId == 0){
-            
+
         }
-    }
-
-
+    }*/
 
     // Choose the next destination point when the agent gets
     // close to the current one.
     void Update () {
-        if (agent.remainingDistance < 0.5f)
+        if (_travelling && (_navMeshAgent.remainingDistance <= 7.0f) && !_navMeshAgent.pathPending){
+            _travelling = false;
+            Debug.Log(_navMeshAgent.remainingDistance);
+            //Wait in busStop
+            /*if(_navMeshAgent.){
+
+            }*/
+
             GotoNextPoint();
+        }
     }
 }
